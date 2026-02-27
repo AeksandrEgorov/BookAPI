@@ -1,5 +1,11 @@
 import { faker } from '@faker-js/faker';
 import { Book } from "../../models/book.model";
+
+// Minimum dataset sizes (follow screenshot requirements)
+const BOOK_COUNT = 15; // between 10-15
+const AUTHOR_COUNT = 7; // between 5-7
+const PUBLISHER_COUNT = 4; // between 3-4
+const GENRE_COUNT = 6; // 5+
 /**
 * Generates a single fake book using faker.
 *
@@ -10,8 +16,20 @@ function generateBook(id: number): Book {
 	return {
 		id,
 		title: faker.book.title(),
+		isbn: `${faker.number.int({ min: 1000000000000, max: 9999999999999 })}`,
 		publishedYear: faker.date.past({ years: 50 }).getFullYear(),
-		author: faker.person.fullName()
+		pageCount: faker.number.int({ min: 50, max: 1200 }),
+		language: faker.helpers.arrayElement(["en", "et", "fi", "fr", "de"]),
+		description: faker.lorem.sentences(2),
+		coverImage: `https://picsum.photos/seed/${id}/200/300`,
+		authorId: faker.number.int({ min: 1, max: AUTHOR_COUNT }),
+		publisherId: faker.number.int({ min: 1, max: PUBLISHER_COUNT }),
+		genres: Array.from(
+			{ length: faker.number.int({ min: 1, max: 3 }) },
+			() => String(faker.number.int({ min: 1, max: GENRE_COUNT }))
+		),
+		createdAt: faker.date.past({ years: 5 }).toISOString(),
+		updatedAt: faker.date.recent({ days: 30 }).toISOString(),
 	};
 }
 /**
@@ -38,4 +56,11 @@ function generateSeededBooks(count: number, seed: number = 42): Book[] {
 	return books;
 }
 // Genereeri 20 raamatut
-export let books: Book[] = generateBooks(20);
+export let books: Book[] = generateBooks(BOOK_COUNT);
+
+export const MOCK_COUNTS = {
+	books: BOOK_COUNT,
+	authors: AUTHOR_COUNT,
+	publishers: PUBLISHER_COUNT,
+	genres: GENRE_COUNT,
+};

@@ -33,11 +33,20 @@ export async function generateBooksFromGoogle(
 	if (!data.items) return [];
 	return data.items.slice(0, count).map((item: any, i: number) => {
 		const info = item.volumeInfo ?? {};
+		const isbn = (info.industryIdentifiers && info.industryIdentifiers[0]?.identifier) ?? "";
 		return {
 			id: i + 1,
 			title: info.title ?? "Unknown title",
-			author: info.authors?.[0] ?? "Unknown author",
-			publishedYear: getYear(info.publishedDate)
+			isbn,
+			publishedYear: getYear(info.publishedDate),
+			pageCount: info.pageCount ?? 0,
+			language: info.language ?? "en",
+			description: info.description ?? "",
+			coverImage: info.imageLinks?.thumbnail,
+			authorId: 1,
+			publisherId: 1,
+			genres: [],
+			createdAt: new Date().toISOString(),
 		} as Book;
 	});
 }

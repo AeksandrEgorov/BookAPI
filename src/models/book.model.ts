@@ -1,6 +1,17 @@
+import { Genre } from "./genre.model";
+
 export interface Book {
     id: number;
     title: string;
+    isbn: string;
     publishedYear: number;
-    author: string;
+    pageCount: number;
+    language: string;
+    description?: string;
+    coverImage?: string;
+    authorId: number;
+    publisherId: number;
+    genres: string[];
+    createdAt: string; 
+    updatedAt?: string; 
 }

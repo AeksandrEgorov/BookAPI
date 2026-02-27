@@ -2,15 +2,13 @@ import { books as booksFaker } from "../data/mock/books.mock.faker";
 import { books as booksManual } from "../data/mock/books.mock";
 import { books as booksHybrid } from "../data/mock/books.mock.hybrid";
 import { books as booksPromiseGoogle } from "../data/mock/books.mock.googleapi";
+import { Book } from "../models/book.model";
 
-function logBooks(
- 	title: string,
- 	books: { id: number; title: string; author: string; publishedYear: number }[]
-): void {
+function logBooks(title: string, books: Book[]): void {
  	console.log("\n" + "=".repeat(60));
  	console.log(title);
  	console.log("=".repeat(60));
- 	console.table(books);
+ 	console.table(books, ["id", "title", "authorId", "publisherId", "publishedYear"]);
  	console.log(`Total: ${books.length} books\n`);
 }
 
