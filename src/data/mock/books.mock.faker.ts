@@ -1,66 +1,70 @@
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker";
 import { Book } from "../../models/book.model";
 
-// Minimum dataset sizes (follow screenshot requirements)
-const BOOK_COUNT = 15; // between 10-15
-const AUTHOR_COUNT = 7; // between 5-7
-const PUBLISHER_COUNT = 4; // between 3-4
-const GENRE_COUNT = 6; // 5+
-/**
-* Generates a single fake book using faker.
-*
-* @param id Unique identifier for the book.
-* @returns A fake `Book` instance.
-*/
+const BOOK_COUNT = 15;
+const AUTHOR_COUNT = 7;
+const PUBLISHER_COUNT = 4;
+
+const AVAILABLE_GENRES = [
+  "Fiction",
+  "Non-fiction",
+  "Programming",
+  "Science",
+  "History",
+  "Fantasy",
+  "Biography",
+  "Philosophy",
+];
+
 function generateBook(id: number): Book {
-	return {
-		id,
-		title: faker.book.title(),
-		isbn: `${faker.number.int({ min: 1000000000000, max: 9999999999999 })}`,
-		publishedYear: faker.date.past({ years: 50 }).getFullYear(),
-		pageCount: faker.number.int({ min: 50, max: 1200 }),
-		language: faker.helpers.arrayElement(["en", "et", "fi", "fr", "de"]),
-		description: faker.lorem.sentences(2),
-		coverImage: `https://picsum.photos/seed/${id}/200/300`,
-		authorId: faker.number.int({ min: 1, max: AUTHOR_COUNT }),
-		publisherId: faker.number.int({ min: 1, max: PUBLISHER_COUNT }),
-		genres: Array.from(
-			{ length: faker.number.int({ min: 1, max: 3 }) },
-			() => String(faker.number.int({ min: 1, max: GENRE_COUNT }))
-		),
-		createdAt: faker.date.past({ years: 5 }).toISOString(),
-		updatedAt: faker.date.recent({ days: 30 }).toISOString(),
-	};
+  const createdAt = faker.date.past({ years: 5 });
+  const updatedAt = faker.date.between({
+    from: createdAt,
+    to: new Date(),
+  });
+
+  return {
+    id,
+    title: faker.book.title(),
+    isbn: faker.string.numeric(13),
+    publishedYear: faker.number.int({ min: 1980, max: 2025 }),
+    pageCount: faker.number.int({ min: 80, max: 1200 }),
+    language: faker.helpers.arrayElement([
+      "English",
+      "Estonian",
+      "Finnish",
+      "German",
+      "French",
+    ]),
+    description: faker.lorem.sentences(2),
+    coverImage: `https://picsum.photos/seed/book-${id}/200/300`,
+    authorId: faker.number.int({ min: 1, max: AUTHOR_COUNT }),
+    publisherId: faker.number.int({ min: 1, max: PUBLISHER_COUNT }),
+    genres: faker.helpers.arrayElements(
+      AVAILABLE_GENRES,
+      faker.number.int({ min: 1, max: 3 })
+    ),
+    createdAt: createdAt.toISOString(),
+    updatedAt: updatedAt.toISOString(),
+  };
 }
-/**
-* Generates an array of fake books.
-*
-* @param count Number of books to generate.
-* @returns Array of fake `Book` instances.
-*/
+
 function generateBooks(count: number): Book[] {
-	return Array.from({ length: count }, (_, index) => generateBook(index + 1));
+  return Array.from({ length: count }, (_, index) => generateBook(index + 1));
 }
-/**
-* Generates a seeded array of fake books.
-* Useful for tests where data must be stable.
-*
-* @param count Number of books to generate.
-* @param seed Seed value for faker (default 42).
-* @returns Array of fake `Book` instances generated with a fixed seed.
-*/
-function generateSeededBooks(count: number, seed: number = 42): Book[] {
-	faker.seed(seed);
-	const books = Array.from({ length: count }, (_, index) => generateBook(index + 1));
-	faker.seed();
-	return books;
+
+export function generateSeededBooks(count: number, seed = 42): Book[] {
+  faker.seed(seed);
+  const result = generateBooks(count);
+  faker.seed();
+  return result;
 }
-// Genereeri 20 raamatut
-export let books: Book[] = generateBooks(BOOK_COUNT);
+
+export let books: Book[] = generateSeededBooks(BOOK_COUNT);
 
 export const MOCK_COUNTS = {
-	books: BOOK_COUNT,
-	authors: AUTHOR_COUNT,
-	publishers: PUBLISHER_COUNT,
-	genres: GENRE_COUNT,
+  books: BOOK_COUNT,
+  authors: AUTHOR_COUNT,
+  publishers: PUBLISHER_COUNT,
+  genres: AVAILABLE_GENRES.length,
 };

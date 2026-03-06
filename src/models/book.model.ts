@@ -1,5 +1,3 @@
-import { Genre } from "./genre.model";
-
 export interface Book {
     id: number;
     title: string;
@@ -13,5 +11,5 @@ export interface Book {
     publisherId: number;
     genres: string[];
     createdAt: string; 
-    updatedAt?: string; 
+    updatedAt: string; 
 }

@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker";
 import { Publisher } from "../../models/publisher.model";
 import { MOCK_COUNTS } from "./books.mock.faker";
 
@@ -9,10 +9,13 @@ function generatePublisher(id: number): Publisher {
     id,
     name: faker.company.name(),
     country: faker.location.country(),
-    foundedYear: faker.number.int({ min: 1800, max: 2020 }),
+    foundedYear: faker.number.int({ min: 1850, max: 2020 }),
     website: faker.internet.url(),
     createdAt: faker.date.past({ years: 30 }).toISOString(),
   };
 }
 
-export const publishers: Publisher[] = Array.from({ length: COUNT }, (_, i) => generatePublisher(i + 1));
+export const publishers: Publisher[] = Array.from(
+  { length: COUNT },
+  (_, index) => generatePublisher(index + 1)
+);
