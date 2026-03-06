@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["booksAPI"]
+}
+
+model Book {
+  id            Int          @id @default(autoincrement())
+  title         String
+  publishedYear Int
+
+  authors       AuthorBook[]
+
+  @@schema("booksAPI")
+}
+
+model Author {
+  id        Int          @id @default(autoincrement())
+  firstname String
+  lastname  String
+
+  books     AuthorBook[]
+
+  @@schema("booksAPI")
+}
+
+model AuthorBook {
+  id        Int    @id @default(autoincrement())
+
+  id_author Int
+  id_book   Int
+
+  author    Author @relation(fields: [id_author], references: [id])
+  book      Book   @relation(fields: [id_book], references: [id])
+
+  @@schema("booksAPI")
+}

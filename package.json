@@ -2,12 +2,16 @@
   "name": "bookapi",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "log-books": "tsx src/scripts/log-all-books.ts"
+    "start": "node dist/server.js",
+    "log-books": "tsx src/scripts/log-all-books.ts",
+    "seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -17,11 +21,15 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.2",
     "axios": "^1.13.5",
+    "prisma": "^7.4.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
+    "@prisma/adapter-pg": "^7.4.2",
+    "@prisma/client": "^7.4.2",
+    "dotenv": "^17.3.1",
     "express": "^5.2.1"
   }
 }
