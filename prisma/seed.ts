@@ -1,136 +1,100 @@
-import "dotenv/config";
-import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma";
+import { authors } from "../src/data/mock/authors.mock.faker";
+import { publishers } from "../src/data/mock/publishers.mock.faker";
+import { books } from "../src/data/mock/books.mock.faker";
+import { reviews } from "../src/data/mock/reviews.mock.faker";
 
-const prisma = new PrismaClient({
-	adapter: new PrismaPg({
-		connectionString: process.env.DATABASE_URL as string,
-	}),
-});
+const prisma = new PrismaClient();
 
 async function main() {
-	console.log("Seeding database...");
+  console.log("Seeding database...");
 
-	await prisma.authorBook.deleteMany();
-	await prisma.book.deleteMany();
-	await prisma.author.deleteMany();
+  await prisma.author.createMany({
+    data: authors.map((a) => ({
+      id: a.id,
+      firstName: a.firstName,
+      lastName: a.lastName,
+      birthYear: a.birthYear,
+      nationality: a.nationality,
+      biography: a.biography,
+      createdAt: new Date(a.createdAt),
+    })),
+    skipDuplicates: true,
+  });
 
-	const authors = await prisma.$transaction([
-		prisma.author.create({
-			data: { firstname: "Robert", lastname: "Martin" },
-		}),
-		prisma.author.create({
-			data: { firstname: "Martin", lastname: "Fowler" },
-		}),
-		prisma.author.create({
-			data: { firstname: "Erich", lastname: "Gamma" },
-		}),
-		prisma.author.create({
-			data: { firstname: "Richard", lastname: "Helm" },
-		}),
-		prisma.author.create({
-			data: { firstname: "Ralph", lastname: "Johnson" },
-		}),
-		prisma.author.create({
-			data: { firstname: "John", lastname: "Vlissides" },
-		}),
-		prisma.author.create({
-			data: { firstname: "Kent", lastname: "Beck" },
-		}),
-		prisma.author.create({
-			data: { firstname: "Joshua", lastname: "Bloch" },
-		}),
-	]);
+  await prisma.publisher.createMany({
+    data: publishers.map((p) => ({
+      id: p.id,
+      name: p.name,
+      country: p.country,
+      foundedYear: p.foundedYear,
+      website: p.website,
+      createdAt: new Date(p.createdAt),
+    })),
+    skipDuplicates: true,
+  });
 
-	const [
-		robertMartin,
-		martinFowler,
-		erichGamma,
-		richardHelm,
-		ralphJohnson,
-		johnVlissides,
-		kentBeck,
-		joshuaBloch,
-	] = authors;
+  const allGenres = Array.from(
+    new Set(books.flatMap((b) => b.genres))
+  );
 
-	const books = await prisma.$transaction([
-		prisma.book.create({
-			data: { title: "Clean Code", publishedYear: 2008 },
-		}),
-		prisma.book.create({
-			data: { title: "The Pragmatic Programmer", publishedYear: 1999 },
-		}),
-		prisma.book.create({
-			data: { title: "Refactoring", publishedYear: 1999 },
-		}),
-		prisma.book.create({
-			data: { title: "Clean Architecture", publishedYear: 2017 },
-		}),
-		prisma.book.create({
-			data: { title: "Design Patterns", publishedYear: 1994 },
-		}),
-		prisma.book.create({
-			data: { title: "Test-Driven Development", publishedYear: 2002 },
-		}),
-		prisma.book.create({
-			data: { title: "Effective Java", publishedYear: 2001 },
-		}),
-		prisma.book.create({
-			data: { title: "Patterns of Enterprise Application Architecture", publishedYear: 2002 },
-		}),
-		prisma.book.create({
-			data: { title: "Working Effectively with Legacy Code", publishedYear: 2004 },
-		}),
-		prisma.book.create({
-			data: { title: "Refactoring to Patterns", publishedYear: 2004 },
-		}),
-	]);
+  await prisma.genre.createMany({
+    data: allGenres.map((name) => ({ name })),
+    skipDuplicates: true,
+  });
 
-	const [
-		cleanCode,
-		pragmaticProgrammer,
-		refactoring,
-		cleanArchitecture,
-		designPatterns,
-		tdd,
-		effectiveJava,
-		poeaa,
-		legacyCode,
-		refactoringToPatterns,
-	] = books;
+  const genresFromDb = await prisma.genre.findMany();
 
-		await prisma.authorBook.createMany({
-			data: [
-				// Robert C. Martin
-				{ id_author: robertMartin.id, id_book: cleanCode.id },
-				{ id_author: robertMartin.id, id_book: cleanArchitecture.id },
-				// Martin Fowler
-				{ id_author: martinFowler.id, id_book: refactoring.id },
-				{ id_author: martinFowler.id, id_book: poeaa.id },
-				// Gang of Four
-				{ id_author: erichGamma.id, id_book: designPatterns.id },
-				{ id_author: richardHelm.id, id_book: designPatterns.id },
-				{ id_author: ralphJohnson.id, id_book: designPatterns.id },
-				{ id_author: johnVlissides.id, id_book: designPatterns.id },
-				// Kent Beck
-				{ id_author: kentBeck.id, id_book: tdd.id },
-				{ id_author: kentBeck.id, id_book: legacyCode.id },
-				// Joshua Bloch
-				{ id_author: joshuaBloch.id, id_book: effectiveJava.id },
-				// Multiple authors on same book
-				{ id_author: martinFowler.id, id_book: legacyCode.id },
-				{ id_author: kentBeck.id, id_book: refactoringToPatterns.id },
-			],
-		});
+  for (const b of books) {
+    await prisma.book.create({
+      data: {
+        id: b.id,
+        title: b.title,
+        isbn: b.isbn,
+        publishedYear: b.publishedYear,
+        pageCount: b.pageCount,
+        language: b.language,
+        description: b.description,
+        coverImage: b.coverImage,
+        createdAt: new Date(b.createdAt),
+        updatedAt: new Date(b.updatedAt),
 
-	console.log("Seed done!");
+        author: {
+          connect: { id: b.authorId },
+        },
+        publisher: {
+          connect: { id: b.publisherId },
+        },
+
+        genres: {
+          connect: genresFromDb
+            .filter((g) => b.genres.includes(g.name))
+            .map((g) => ({ id: g.id })),
+        },
+      },
+    });
+  }
+
+  await prisma.review.createMany({
+    data: reviews.map((r) => ({
+      id: r.id,
+      bookId: r.bookId,
+      userName: r.userName,
+      rating: r.rating,
+      comment: r.comment,
+      createdAt: new Date(r.createdAt),
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log("Seeding finished");
 }
 
 main()
-	.catch((error) => {
-		console.error("Error:", error);
-		process.exit(1);
-	})
-	.finally(async () => {
-		await prisma.$disconnect();
-	});
+  .catch((e) => {
+    console.error("Seed error:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
