@@ -2,5 +2,5 @@
 dist/
 build/
 .env
-
-/src/generated/prisma
+src/generated
+src/generated/prisma
