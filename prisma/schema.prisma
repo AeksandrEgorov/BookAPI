@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["bookapi"]
 }
 
 model Author {
@@ -19,6 +20,7 @@ model Author {
   books       Book[]
 
   @@index([lastName])
+  @@schema("bookapi")
 }
 
 model Publisher {
@@ -32,6 +34,7 @@ model Publisher {
   books       Book[]
 
   @@index([name])
+  @@schema("bookapi")
 }
 
 model Genre {
@@ -39,6 +42,8 @@ model Genre {
   name  String @unique
 
   books Book[]
+
+  @@schema("bookapi")
 }
 
 model Book {
@@ -66,6 +71,7 @@ model Book {
   @@index([language])
   @@index([authorId])
   @@index([publisherId])
+  @@schema("bookapi")
 }
 
 model Review {
@@ -79,4 +85,5 @@ model Review {
   book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@index([bookId])
+  @@schema("bookapi")
 }

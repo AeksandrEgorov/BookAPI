@@ -1,10 +1,23 @@
-import { PrismaClient } from "../src/generated/prisma";
+import "dotenv/config";
+import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+
 import { authors } from "../src/data/mock/authors.mock.faker";
 import { publishers } from "../src/data/mock/publishers.mock.faker";
 import { books } from "../src/data/mock/books.mock.faker";
 import { reviews } from "../src/data/mock/reviews.mock.faker";
 
-const prisma = new PrismaClient();
+const databaseUrl: string | undefined = process.env.DATABASE_URL;
+
+if (databaseUrl === undefined) {
+  throw new Error("DATABASE_URL is not set");
+}
+
+const adapter = new PrismaPg({
+  connectionString: databaseUrl,
+});
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding database...");
@@ -48,7 +61,6 @@ async function main() {
   for (const b of books) {
     await prisma.book.create({
       data: {
-        id: b.id,
         title: b.title,
         isbn: b.isbn,
         publishedYear: b.publishedYear,
