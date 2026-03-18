@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "log-books": "tsx src/scripts/log-all-books.ts"
+    "log-books": "tsx src/scripts/log-all-books.ts",
+    "seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",

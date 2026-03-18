@@ -22,7 +22,7 @@ export const createBookSchema = z.object({
     description: z.string().max(2000, 'Description can be maximum 2000 characters').optional(),
     coverImage: urlSchema.optional(),
     authorId: z.number().int('Author ID must be an integer').min(1, "Author ID must be at least 1"),
-    publishedId: z.number().int('Publisher ID must be an integer').min(1, 'Publisher ID must be at least 1'),
+    publisherId: z.number().int('Publisher ID must be an integer').min(1, 'Publisher ID must be at least 1'),
     genres: z.array(z.string().min(1, 'Genre cannot be empty')).min(1, 'At least one genre is required'),
 });
 
@@ -43,7 +43,7 @@ export const bookQuerySchema = z.object({
     title: z.string().min(1, 'Title cannot be empty').optional(),
     author: z.string().min(1, 'Author cannot be empty').optional(),
     genre: z.string().min(1, 'Genre cannot be empty').optional(),
-    languages: z.string().min(1, 'Language cannot be empty').optional(),
+    language: z.string().min(1, 'Language cannot be empty').optional(),
     year: z.coerce.number().int('Year must be an integer').min(0, 'Year must be positive').max(currentYear, `Year cannot be greater than ${currentYear}`).optional(),
     sortBy: z.enum(["title", "publishedYear"]).optional(),
     order: z.enum(['asc', 'desc']).optional(),
