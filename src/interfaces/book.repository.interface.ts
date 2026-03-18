@@ -1,4 +1,5 @@
 
+// Interfaces: book repository types
 import { Book } from "../models/book.model";
 
 export interface BookQuery {
@@ -54,10 +55,16 @@ export interface PaginatedBooksResult {
 }
 
 export interface BookRepository {
+  // find
   findAll(query: BookQuery): Promise<PaginatedBooksResult>;
+  // single
   findById(id: number): Promise<Book | null>;
+  // create
   create(data: CreateBookInput): Promise<Book>;
+  // update
   update(id: number, data: UpdateBookInput): Promise<Book | null>;
+  // delete
   delete(id: number): Promise<Book | null>;
+  // rating
   getAverageRating(bookId: number): Promise<number | null>;
 }

@@ -1,3 +1,4 @@
+// Routes: reviews endpoints
 import { Router, Request, Response, NextFunction } from "express";
 import {
   createReview,
@@ -24,6 +25,39 @@ function parseId(idParam: string | string[]): number | null {
   return id;
 }
 
+/**
+ * @openapi
+ * /api/v1/books/{bookId}/reviews:
+ *   get:
+ *     summary: Get reviews for a specific book
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: bookId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Book id
+ *     responses:
+ *       200:
+ *         description: Reviews list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ReviewsResponse'
+ *       400:
+ *         description: Invalid book id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 reviewsRouter.get(
   "/:bookId/reviews",
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -57,6 +91,48 @@ reviewsRouter.get(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/books/{bookId}/reviews:
+ *   post:
+ *     summary: Add review for a specific book
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: bookId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Book id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateReviewInput'
+ *     responses:
+ *       201:
+ *         description: Review created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Review'
+ *       400:
+ *         description: Validation failed or invalid book id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 reviewsRouter.post(
   "/:bookId/reviews",
   validateBody(createReviewSchema),

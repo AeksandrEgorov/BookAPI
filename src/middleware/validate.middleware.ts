@@ -1,3 +1,4 @@
+// Middleware: input validators using zod
 import { Request, Response, NextFunction } from "express";
 import { ZodError, ZodType } from "zod";
 
@@ -13,6 +14,7 @@ function formatZodError(error: ZodError): ValidationErrorDetail[] {
   }));
 }
 
+// validate body
 export function validateBody(schema: ZodType) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
@@ -30,6 +32,7 @@ export function validateBody(schema: ZodType) {
   };
 }
 
+// validate query
 export function validateQuery(schema: ZodType) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.query);

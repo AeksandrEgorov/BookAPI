@@ -1,3 +1,4 @@
+// Books service: business logic for books. Calls Repository methods.
 import { bookRepository } from "../config/repositories";
 import { Book } from "../models/book.model";
 import {

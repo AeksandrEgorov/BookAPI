@@ -1,3 +1,4 @@
+// Middleware: simple 404 handler
 import { Request, Response, NextFunction } from "express";
 
 export function notFoundMiddleware(

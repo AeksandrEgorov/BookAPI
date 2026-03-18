@@ -1,3 +1,4 @@
+// Reviews service: business logic for reviews. Calls Repository methods.
 import { reviewRepository } from "../config/repositories";
 
 import { CreateReviewInput } from "../interfaces/review.repository.interface";

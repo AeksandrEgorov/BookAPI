@@ -1,3 +1,4 @@
+// Interfaces: review repository
 import { Review } from "../models/review.model";
 
 export interface CreateReviewInput {
@@ -7,6 +8,8 @@ export interface CreateReviewInput {
 }
 
 export interface ReviewRepository {
+  // list
   findByBookId(bookId: number): Promise<Review[]>;
+  // add
   create(bookId: number, data: CreateReviewInput): Promise<Review>;
 }

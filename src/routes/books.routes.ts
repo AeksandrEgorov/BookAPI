@@ -1,3 +1,4 @@
+// Routes: books endpoints
 import { Router, Request, Response, NextFunction } from "express";
 
 import {
@@ -48,14 +49,81 @@ function parseId(idParam: string | string[]): number | null {
   return id;
 }
 
-
+/**
+ * @openapi
+ * /api/v1/books:
+ *   get:
+ *     summary: Get all books
+ *     description: Returns books with filters, sorting and pagination
+ *     tags: [Books]
+ *     parameters:
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *         description: Filter by book title
+ *       - in: query
+ *         name: author
+ *         schema:
+ *           type: string
+ *         description: Filter by author name
+ *       - in: query
+ *         name: genre
+ *         schema:
+ *           type: string
+ *         description: Filter by genre
+ *       - in: query
+ *         name: language
+ *         schema:
+ *           type: string
+ *         description: Filter by language
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         description: Filter by published year
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [title, publishedYear]
+ *         description: Sort field
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         description: Sort order
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Items per page
+ *     responses:
+ *       200:
+ *         description: Books list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BooksListResponse'
+ *       400:
+ *         description: Validation failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 booksRouter.get(
   "/",
   validateQuery(bookQuerySchema),
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const query: BookQuery = res.locals.validatedQuery as BookQuery;
-
       const result = await getAllBooks(query);
 
       res.status(200).json(result);
@@ -65,10 +133,36 @@ booksRouter.get(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/books:
+ *   post:
+ *     summary: Create a new book
+ *     tags: [Books]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateBookInput'
+ *     responses:
+ *       201:
+ *         description: Book created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookResponse'
+ *       400:
+ *         description: Validation failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 booksRouter.post(
   "/",
   validateBody(createBookSchema),
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const body: CreateBookInput =
         res.locals.validatedBody as CreateBookInput;
@@ -84,7 +178,20 @@ booksRouter.post(
   }
 );
 
-
+/**
+ * @openapi
+ * /api/v1/books/languages:
+ *   get:
+ *     summary: Get all available languages
+ *     tags: [Reference]
+ *     responses:
+ *       200:
+ *         description: Languages list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LanguagesResponse'
+ */
 booksRouter.get(
   "/languages",
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -102,6 +209,20 @@ booksRouter.get(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/books/genres:
+ *   get:
+ *     summary: Get all available genres
+ *     tags: [Reference]
+ *     responses:
+ *       200:
+ *         description: Genres list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/GenresResponse'
+ */
 booksRouter.get(
   "/genres",
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -123,11 +244,25 @@ booksRouter.get(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/books/authors:
+ *   get:
+ *     summary: Get all authors
+ *     tags: [Reference]
+ *     responses:
+ *       200:
+ *         description: Authors list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthorsResponse'
+ */
 booksRouter.get(
   "/authors",
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const authorsList = authors
+      const authorsList: { id: number; fullName: string }[] = authors
         .map((author) => ({
           id: author.id,
           fullName: `${author.firstName} ${author.lastName}`,
@@ -143,11 +278,25 @@ booksRouter.get(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/books/publishers:
+ *   get:
+ *     summary: Get all publishers
+ *     tags: [Reference]
+ *     responses:
+ *       200:
+ *         description: Publishers list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PublishersResponse'
+ */
 booksRouter.get(
   "/publishers",
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const publishersList = publishers
+      const publishersList: { id: number; name: string }[] = publishers
         .map((publisher) => ({
           id: publisher.id,
           name: publisher.name,
@@ -163,7 +312,39 @@ booksRouter.get(
   }
 );
 
-
+/**
+ * @openapi
+ * /api/v1/books/{id}:
+ *   get:
+ *     summary: Get book by id
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Book id
+ *     responses:
+ *       200:
+ *         description: Single book
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookResponse'
+ *       400:
+ *         description: Invalid book id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 booksRouter.get(
   "/:id",
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -195,6 +376,45 @@ booksRouter.get(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/books/{id}:
+ *   put:
+ *     summary: Update book by id
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Book id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateBookInput'
+ *     responses:
+ *       200:
+ *         description: Book updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookResponse'
+ *       400:
+ *         description: Invalid input or invalid book id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 booksRouter.put(
   "/:id",
   validateBody(updateBookSchema),
@@ -230,6 +450,39 @@ booksRouter.put(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/books/{id}:
+ *   delete:
+ *     summary: Delete book by id
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Book id
+ *     responses:
+ *       200:
+ *         description: Book deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookResponse'
+ *       400:
+ *         description: Invalid book id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 booksRouter.delete(
   "/:id",
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -261,6 +514,39 @@ booksRouter.delete(
   }
 );
 
+/**
+ * @openapi
+ * /api/v1/books/{id}/average-rating:
+ *   get:
+ *     summary: Get average rating of a book
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Book id
+ *     responses:
+ *       200:
+ *         description: Average rating
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AverageRatingResponse'
+ *       400:
+ *         description: Invalid book id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 booksRouter.get(
   "/:id/average-rating",
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {

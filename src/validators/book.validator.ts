@@ -1,7 +1,10 @@
+// Book validators
 import { z } from 'zod';
 
+// Current year used for publishedYear checks
 const currentYear: number = new Date().getFullYear();
 
+// URL validator
 export const urlSchema = z.string().refine((value: string) => {
     try {
         const url = new URL(value);
@@ -13,6 +16,7 @@ export const urlSchema = z.string().refine((value: string) => {
     message: 'Must be a valid http or https URL',
 });
 
+// Schemas
 export const createBookSchema = z.object({
     title: z.string().min(1, 'Title is required').max(255, 'Title can be maximum 255 characters'),
     isbn: z.string().regex(/^\d{10}(\d{3})?$/, 'ISBN must be 10 or 13 digits'),

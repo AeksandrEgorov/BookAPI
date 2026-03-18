@@ -1,3 +1,4 @@
+// Repo: mock book storage
 import { books } from "../data/mock/books.mock.faker";
 import { authors } from "../data/mock/authors.mock.faker";
 import { reviews } from "../data/mock/reviews.mock.faker";
@@ -13,6 +14,7 @@ import { Review } from "../models/review.model";
 import { Author } from "../models/author.model";
 
 export class MockBookRepository implements BookRepository {
+  // find all
   async findAll(query: BookQuery): Promise<PaginatedBooksResult> {
     let result: Book[] = [...books];
 
@@ -103,6 +105,7 @@ export class MockBookRepository implements BookRepository {
     };
   }
 
+  // find one
   async findById(id: number): Promise<Book | null> {
     const book: Book | undefined = books.find(
       (bookItem: Book) => bookItem.id === id
@@ -111,6 +114,7 @@ export class MockBookRepository implements BookRepository {
     return book ?? null;
   }
 
+  // create
   async create(data: CreateBookInput): Promise<Book> {
     const newId: number =
       books.length > 0
@@ -140,6 +144,7 @@ export class MockBookRepository implements BookRepository {
     return newBook;
   }
 
+  // update
   async update(id: number, data: UpdateBookInput): Promise<Book | null> {
     const index: number = books.findIndex(
       (book: Book) => book.id === id
@@ -162,6 +167,7 @@ export class MockBookRepository implements BookRepository {
     return updatedBook;
   }
 
+  // delete
   async delete(id: number): Promise<Book | null> {
     const index: number = books.findIndex(
       (book: Book) => book.id === id
@@ -177,6 +183,7 @@ export class MockBookRepository implements BookRepository {
     return deletedBook;
   }
 
+  // avg rating
   async getAverageRating(bookId: number): Promise<number | null> {
     const bookReviews: Review[] = reviews.filter(
       (reviewItem: Review) => reviewItem.bookId === bookId
