@@ -1,4 +1,4 @@
-// Book validators
+// Book zod schemas validators
 import { z } from 'zod';
 
 // Current year used for publishedYear checks

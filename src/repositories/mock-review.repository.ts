@@ -1,4 +1,4 @@
-// Repo: mock reviews
+// Mock review repository with all crud operations
 import { reviews } from "../data/mock/reviews.mock.faker";
 import { ReviewRepository, CreateReviewInput } from "../interfaces/review.repository.interface";
 import { Review } from "../models/review.model";

@@ -1,4 +1,4 @@
-// Repo: mock book storage
+// Mock book repository with all crud operations
 import { books } from "../data/mock/books.mock.faker";
 import { authors } from "../data/mock/authors.mock.faker";
 import { reviews } from "../data/mock/reviews.mock.faker";
