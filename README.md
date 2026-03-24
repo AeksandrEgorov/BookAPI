@@ -46,9 +46,9 @@ The project supports two data sources:
 ## ⚙️ Setup & Configuration
 
 ### 1. Install dependencies
-
+```
 npm install
-
+```
 ---
 
 ### 2. Configure .env
@@ -72,31 +72,31 @@ CREATE SCHEMA bookapi;
 ### 3. Prisma setup
 
 Generate Prisma Client:
-
+```
 npx prisma generate
-
+```
 Run migrations:
-
+```
 npx prisma migrate dev --name init
-
+```
 Seed the database:
-
+```
 npm run seed
-
+```
 ---
 
 ## 🚀 Running the Project
 
 ### Run with Mock data
-
+```
 npm run mock
-
+```
 ---
 
 ### Run with Prisma (PostgreSQL)
-
+```
 npm run prisma
-
+```
 ---
 
 After starting the server you will see:
@@ -161,17 +161,17 @@ Switching is handled automatically:
 ## ❗ Error Handling
 
 Example:
-
+```
 {
 "error": "Validation failed",
-"details": [
-{
-"field": "isbn",
-"message": "Book with this ISBN already exists"
+  "details": [
+    {
+    "field": "isbn",
+    "message": "Book with this ISBN already exists"
+    }
+  ]
 }
-]
-}
-
+```
 Handled errors:
 
 * Zod validation errors
@@ -181,26 +181,23 @@ Handled errors:
 ---
 
 ## 🗂 Project Structure
-
+```
 BookAPI/
 ├─ prisma/
 │  ├─ migrations/
 │  ├─ schema.prisma
 │  └─ seed.ts
-│
 ├─ src/
 │  ├─ config/
 │  │  ├─ prisma.ts
 │  │  └─ repositories.ts
-│  │
 │  ├─ data/
 │  ├─ docs/
+│  │  └─ swagger.ts
 │  ├─ generated/
 │  │  └─ prisma/
-│  │
 │  ├─ interfaces/
 │  ├─ middleware/
-│  │  └─ error.middleware.ts
 │  ├─ models/
 │  ├─ repositories/
 │  ├─ routes/
@@ -215,7 +212,7 @@ BookAPI/
 ├─ package.json
 ├─ prisma.config.ts
 └─ tsconfig.json
-
+```
 ---
 
 ## 📌 Notes
