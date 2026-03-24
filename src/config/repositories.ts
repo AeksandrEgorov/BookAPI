@@ -10,22 +10,9 @@ import { PrismaReviewRepository } from "../repositories/prisma-review.repository
 
 const DATA_SOURCE: string = process.env.DATA_SOURCE ?? "mock";
 
-// debug
 console.log("====================================");
 console.log("DATA_SOURCE =", DATA_SOURCE);
-console.log(
-  "BookRepository =",
-  DATA_SOURCE === "prisma"
-    ? "PrismaBookRepository"
-    : "MockBookRepository"
-);
-console.log(
-  "ReviewRepository =",
-  DATA_SOURCE === "prisma"
-    ? "PrismaReviewRepository"
-    : "MockReviewRepository"
-);
-console.log("====================================");
+console.log("====================================\n");
 
 export const bookRepository: BookRepository =
   DATA_SOURCE === "prisma"
