@@ -8,6 +8,10 @@ import {
   getAverageRating,
   getBookById,
   updateBook,
+  getLanguages,
+  getGenres,
+  getAuthors,
+  getPublishers
 } from "../services/books.service";
 
 import {
@@ -196,9 +200,7 @@ booksRouter.get(
   "/languages",
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const languages: string[] = Array.from(
-        new Set(books.map((book: Book) => book.language.trim()))
-      ).sort((a: string, b: string) => a.localeCompare(b));
+      const languages: string[] = await getLanguages();
 
       res.status(200).json({
         data: languages,
@@ -227,13 +229,7 @@ booksRouter.get(
   "/genres",
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const genres: string[] = Array.from(
-        new Set(
-          books.flatMap((book: Book) =>
-            book.genres.map((genre: string) => genre.trim())
-          )
-        )
-      ).sort((a: string, b: string) => a.localeCompare(b));
+      const genres: string[] = await getGenres();
 
       res.status(200).json({
         data: genres,
@@ -243,6 +239,7 @@ booksRouter.get(
     }
   }
 );
+
 
 /**
  * @openapi
@@ -262,15 +259,10 @@ booksRouter.get(
   "/authors",
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const authorsList: { id: number; fullName: string }[] = authors
-        .map((author) => ({
-          id: author.id,
-          fullName: `${author.firstName} ${author.lastName}`,
-        }))
-        .sort((a, b) => a.fullName.localeCompare(b.fullName));
+      const authors = await getAuthors();
 
       res.status(200).json({
-        data: authorsList,
+        data: authors,
       });
     } catch (error: unknown) {
       next(error);
@@ -296,15 +288,10 @@ booksRouter.get(
   "/publishers",
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const publishersList: { id: number; name: string }[] = publishers
-        .map((publisher) => ({
-          id: publisher.id,
-          name: publisher.name,
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
+      const publishers = await getPublishers();
 
       res.status(200).json({
-        data: publishersList,
+        data: publishers,
       });
     } catch (error: unknown) {
       next(error);

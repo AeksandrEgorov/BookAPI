@@ -54,6 +54,15 @@ export interface PaginatedBooksResult {
   pagination: PaginationMeta;
 }
 
+export type AuthorOption = {
+  id: number;
+  fullName: string;
+};
+
+export type PublisherOption = {
+  id: number;
+  name: string;
+}
 export interface BookRepository {
   // find
   findAll(query: BookQuery): Promise<PaginatedBooksResult>;
@@ -67,4 +76,12 @@ export interface BookRepository {
   delete(id: number): Promise<Book | null>;
   // rating
   getAverageRating(bookId: number): Promise<number | null>;
+  // languages
+  getLanguages(): Promise<string[]>;
+  // genres
+  getGenres(): Promise<string[]>;
+  // authors
+  getAuthors(): Promise<AuthorOption[]>;
+  // publishers
+  getPublishers(): Promise<PublisherOption[]>;
 }

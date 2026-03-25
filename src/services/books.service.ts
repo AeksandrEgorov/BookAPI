@@ -6,6 +6,8 @@ import {
     CreateBookInput,
     PaginatedBooksResult,
     UpdateBookInput,
+    AuthorOption,
+    PublisherOption
 } from "../interfaces/book.repository.interface";
 
 export async function getAllBooks(query: BookQuery): Promise<PaginatedBooksResult> {
@@ -31,6 +33,22 @@ export async function deleteBook(id: number): Promise<Book | null> {
 export async function getAverageRating(bookId: number): Promise<number | null> {
     return bookRepository.getAverageRating(bookId);
 };
+
+export async function getLanguages(): Promise<string[]> {
+  return bookRepository.getLanguages();
+}
+
+export async function getGenres(): Promise<string[]> {
+  return bookRepository.getGenres();
+}
+
+export async function getAuthors(): Promise<AuthorOption[]> {
+  return bookRepository.getAuthors();
+}
+
+export async function getPublishers(): Promise<PublisherOption[]> {
+  return bookRepository.getPublishers();
+}
 
 
 

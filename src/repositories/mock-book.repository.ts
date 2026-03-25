@@ -2,12 +2,17 @@
 import { books } from "../data/mock/books.mock.faker";
 import { authors } from "../data/mock/authors.mock.faker";
 import { reviews } from "../data/mock/reviews.mock.faker";
+import { publishers } from "../data/mock/publishers.mock.faker";
+import { Publisher } from "../models/publisher.model";
+
 import {
   BookQuery,
   BookRepository,
   CreateBookInput,
   PaginatedBooksResult,
   UpdateBookInput,
+  AuthorOption,
+  PublisherOption
 } from "../interfaces/book.repository.interface";
 import { Book } from "../models/book.model";
 import { Review } from "../models/review.model";
@@ -202,4 +207,43 @@ export class MockBookRepository implements BookRepository {
 
     return Number(averageRating.toFixed(2));
   }
+
+    async getLanguages(): Promise<string[]> {
+    return Array.from(
+      new Set(books.map((book: Book) => book.language.trim()))
+    ).sort((a: string, b: string) => a.localeCompare(b));
+  }
+
+  async getGenres(): Promise<string[]> {
+    return Array.from(
+      new Set(
+        books.flatMap((book: Book) =>
+          book.genres.map((genre: string) => genre.trim())
+        )
+      )
+    ).sort((a: string, b: string) => a.localeCompare(b));
+  }
+
+  async getAuthors(): Promise<AuthorOption[]> {
+    return authors
+      .map((author: Author) => ({
+        id: author.id,
+        fullName: `${author.firstName} ${author.lastName}`,
+      }))
+      .sort((a: AuthorOption, b: AuthorOption) =>
+        a.fullName.localeCompare(b.fullName)
+      );
+  }
+
+  async getPublishers(): Promise<PublisherOption[]> {
+    return publishers
+      .map((publisher: Publisher) => ({
+        id: publisher.id,
+        name: publisher.name,
+      }))
+      .sort((a: PublisherOption, b: PublisherOption) =>
+        a.name.localeCompare(b.name)
+      );
+  }
+
 }

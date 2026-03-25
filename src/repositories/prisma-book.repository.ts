@@ -6,6 +6,8 @@ import {
   CreateBookInput,
   PaginatedBooksResult,
   UpdateBookInput,
+  AuthorOption,
+  PublisherOption
 } from "../interfaces/book.repository.interface";
 import { Book } from "../models/book.model";
 
@@ -364,5 +366,72 @@ export class PrismaBookRepository implements BookRepository {
     }
 
     return Number(result._avg.rating.toFixed(2));
+  }
+
+  async getLanguages(): Promise<string[]> {
+    const records = await prisma.book.findMany({
+      select: {
+        language: true,
+      },
+      distinct: ["language"],
+      orderBy: {
+        language: "asc",
+      },
+    });
+
+    return records.map((record: { language: string }) => record.language);
+  }
+
+  async getGenres(): Promise<string[]> {
+    const records = await prisma.genre.findMany({
+      select: {
+        name: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return records.map((record: { name: string }) => record.name);
+  }
+
+  async getAuthors(): Promise<AuthorOption[]> {
+    const records = await prisma.author.findMany({
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+      orderBy: [
+        { firstName: "asc" },
+        { lastName: "asc" },
+      ],
+    });
+
+    return records
+      .map((record: { id: number; firstName: string; lastName: string }) => ({
+        id: record.id,
+        fullName: `${record.firstName} ${record.lastName}`,
+      }))
+      .sort((a: AuthorOption, b: AuthorOption) =>
+        a.fullName.localeCompare(b.fullName)
+      );
+  }
+
+  async getPublishers(): Promise<PublisherOption[]> {
+    const records = await prisma.publisher.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return records.map((record: { id: number; name: string }) => ({
+      id: record.id,
+      name: record.name,
+    }));
   }
 }
