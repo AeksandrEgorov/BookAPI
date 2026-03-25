@@ -1,5 +1,5 @@
 // Interfaces: review repository
-import { Review } from "../models/review.model";
+import { Review } from "../models/review.model.js";
 
 export interface CreateReviewInput {
   userName: string;

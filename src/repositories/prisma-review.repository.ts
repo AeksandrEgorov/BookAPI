@@ -1,10 +1,10 @@
 // Prisma review repository with all crud operations
-import { prisma } from "../config/prisma";
+import { prisma } from "../config/prisma.js";
 import {
   CreateReviewInput,
   ReviewRepository,
-} from "../interfaces/review.repository.interface";
-import { Review } from "../models/review.model";
+} from "../interfaces/review.repository.interface.js";
+import { Review } from "../models/review.model.js";
 
 type PrismaReviewRecord = {
   id: number;

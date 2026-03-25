@@ -1,7 +1,7 @@
 // Middleware: error handler
 // + Prisma error handling
 import { Request, Response, NextFunction } from "express";
-import { Prisma } from "../generated/prisma/client";
+import { Prisma } from "../generated/prisma/client.js";
 
 type ErrorDetail = {
   field: string;

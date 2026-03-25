@@ -1,6 +1,6 @@
 // Books service: business logic for books. Calls Repository methods.
-import { bookRepository } from "../config/repositories";
-import { Book } from "../models/book.model";
+import { bookRepository } from "../config/repositories.js";
+import { Book } from "../models/book.model.js";
 import {
     BookQuery,
     CreateBookInput,
@@ -8,7 +8,7 @@ import {
     UpdateBookInput,
     AuthorOption,
     PublisherOption
-} from "../interfaces/book.repository.interface";
+} from "../interfaces/book.repository.interface.js";
 
 export async function getAllBooks(query: BookQuery): Promise<PaginatedBooksResult> {
     return bookRepository.findAll(query);

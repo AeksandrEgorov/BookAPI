@@ -8,17 +8,18 @@
   },
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation tsx watch src/index.ts",
-    "mock": "cross-env NODE_OPTIONS=--no-deprecation DATA_SOURCE=mock tsx watch src/index.ts",
-    "prisma": "cross-env NODE_OPTIONS=--no-deprecation DATA_SOURCE=prisma tsx watch src/index.ts",
+    "dev:mock": "cross-env NODE_OPTIONS=--no-deprecation DATA_SOURCE=mock tsx watch src/index.ts",
+    "dev:prisma": "cross-env NODE_OPTIONS=--no-deprecation DATA_SOURCE=prisma tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start:mock": "cross-env NODE_OPTIONS=--no-deprecation DATA_SOURCE=mock node dist/index.js",
+    "start:prisma": "cross-env NODE_OPTIONS=--no-deprecation DATA_SOURCE=prisma node dist/index.js",
     "log-books": "tsx src/scripts/log-all-books.ts",
     "seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.2",

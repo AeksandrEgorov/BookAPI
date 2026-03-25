@@ -1,9 +1,9 @@
 // Mock book repository with all crud operations
-import { books } from "../data/mock/books.mock.faker";
-import { authors } from "../data/mock/authors.mock.faker";
-import { reviews } from "../data/mock/reviews.mock.faker";
-import { publishers } from "../data/mock/publishers.mock.faker";
-import { Publisher } from "../models/publisher.model";
+import { books } from "../data/mock/books.mock.faker.js";
+import { authors } from "../data/mock/authors.mock.faker.js";
+import { reviews } from "../data/mock/reviews.mock.faker.js";
+import { publishers } from "../data/mock/publishers.mock.faker.js";
+import { Publisher } from "../models/publisher.model.js";
 
 import {
   BookQuery,
@@ -13,10 +13,10 @@ import {
   UpdateBookInput,
   AuthorOption,
   PublisherOption
-} from "../interfaces/book.repository.interface";
-import { Book } from "../models/book.model";
-import { Review } from "../models/review.model";
-import { Author } from "../models/author.model";
+} from "../interfaces/book.repository.interface.js";
+import { Book } from "../models/book.model.js";
+import { Review } from "../models/review.model.js";
+import { Author } from "../models/author.model.js";
 
 export class MockBookRepository implements BookRepository {
   // find all

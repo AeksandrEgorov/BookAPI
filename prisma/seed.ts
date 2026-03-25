@@ -1,11 +1,11 @@
 import "dotenv/config";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { authors } from "../src/data/mock/authors.mock.faker";
-import { publishers } from "../src/data/mock/publishers.mock.faker";
-import { books } from "../src/data/mock/books.mock.faker";
-import { reviews } from "../src/data/mock/reviews.mock.faker";
+import { authors } from "../src/data/mock/authors.mock.faker.js";
+import { publishers } from "../src/data/mock/publishers.mock.faker.js";
+import { books } from "../src/data/mock/books.mock.faker.js";
+import { reviews } from "../src/data/mock/reviews.mock.faker.js";
 
 const databaseUrl: string | undefined = process.env.DATABASE_URL;
 

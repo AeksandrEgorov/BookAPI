@@ -87,15 +87,29 @@ npm run seed
 
 ## 🚀 Running the Project
 
+Before running the project, you need to compile it. Otherwise use developer mode commands.
+
+### Compile project
+```
+npm run build or tsc or npx tsc
+```
 ### Run with Mock data
 ```
-npm run mock
+npm run start:mock
+```
+or developer mode
+```
+npm run dev:mock
 ```
 ---
 
 ### Run with Prisma (PostgreSQL)
 ```
-npm run prisma
+npm run start:prisma
+```
+or developer mode
+```
+npm run dev:prisma
 ```
 ---
 
@@ -136,8 +150,8 @@ You can also test endpoints directly in browser (GET requests)
 
 Switching is handled automatically:
 
-* `npm run mock` → uses mock data
-* `npm run prisma` → uses PostgreSQL
+* `npm run start:mock` → uses mock data
+* `npm run start:prisma` → uses PostgreSQL
 
 ---
 

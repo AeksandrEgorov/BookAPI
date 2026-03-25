@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { Author } from "../../models/author.model";
-import { MOCK_COUNTS } from "./books.mock.faker";
+import { Author } from "../../models/author.model.js";
+import { MOCK_COUNTS } from "./books.mock.faker.js";
 
 const COUNT = MOCK_COUNTS.authors;
 

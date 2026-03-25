@@ -12,30 +12,25 @@ import {
   getGenres,
   getAuthors,
   getPublishers
-} from "../services/books.service";
+} from "../services/books.service.js";
 
 import {
   bookQuerySchema,
   createBookSchema,
   updateBookSchema,
-} from "../validators/book.validator";
+} from "../validators/book.validator.js";
 
 import {
   validateBody,
   validateQuery,
-} from "../middleware/validate.middleware";
+} from "../middleware/validate.middleware.js";
 
 import {
   BookQuery,
   CreateBookInput,
   UpdateBookInput,
-} from "../interfaces/book.repository.interface";
+} from "../interfaces/book.repository.interface.js";
 
-import { books } from "../data/mock/books.mock.faker";
-import { authors } from "../data/mock/authors.mock.faker";
-import { publishers } from "../data/mock/publishers.mock.faker";
-
-import { Book } from "../models/book.model";
 
 export const booksRouter: Router = Router();
 

@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { Review } from "../../models/review.model";
-import { MOCK_COUNTS } from "./books.mock.faker";
+import { Review } from "../../models/review.model.js";
+import { MOCK_COUNTS } from "./books.mock.faker.js";
 
 const BOOK_COUNT = MOCK_COUNTS.books;
 const REVIEW_COUNT = 15;

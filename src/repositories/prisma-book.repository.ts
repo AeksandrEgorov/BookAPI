@@ -1,5 +1,5 @@
 // Prisma book repository with all crud operations
-import { prisma } from "../config/prisma";
+import { prisma } from "../config/prisma.js";
 import {
   BookQuery,
   BookRepository,
@@ -8,8 +8,8 @@ import {
   UpdateBookInput,
   AuthorOption,
   PublisherOption
-} from "../interfaces/book.repository.interface";
-import { Book } from "../models/book.model";
+} from "../interfaces/book.repository.interface.js";
+import { Book } from "../models/book.model.js";
 
 type PrismaBookWithGenres = {
   id: number;

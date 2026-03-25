@@ -1,6 +1,6 @@
 
 // Interfaces: book repository types
-import { Book } from "../models/book.model";
+import { Book } from "../models/book.model.js";
 
 export interface BookQuery {
   title?: string;

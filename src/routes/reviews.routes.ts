@@ -3,11 +3,11 @@ import { Router, Request, Response, NextFunction } from "express";
 import {
   createReview,
   getReviewsByBookId,
-} from "../services/reviews.service";
-import { createReviewSchema } from "../validators/review.validator";
-import { validateBody } from "../middleware/validate.middleware";
-import { CreateReviewInput } from "../interfaces/review.repository.interface";
-import { getBookById } from "../services/books.service";
+} from "../services/reviews.service.js";
+import { createReviewSchema } from "../validators/review.validator.js";
+import { validateBody } from "../middleware/validate.middleware.js";
+import { CreateReviewInput } from "../interfaces/review.repository.interface.js";
+import { getBookById } from "../services/books.service.js";
 
 export const reviewsRouter: Router = Router();
 

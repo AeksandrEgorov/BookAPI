@@ -1,4 +1,4 @@
-import { Genre } from "../../models/genre.model";
+import { Genre } from "../../models/genre.model.js";
 
 export const genres: Genre[] = [
   { id: 1, name: "Fiction" },

@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { Book } from "../../models/book.model";
+import { Book } from "../../models/book.model.js";
 
 const BOOK_COUNT = 15;
 const AUTHOR_COUNT = 7;

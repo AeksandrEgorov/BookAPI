@@ -1,11 +1,11 @@
 // App: express server setup
 import express, { Express } from "express";
 import swaggerUi from "swagger-ui-express";
-import { swaggerSpec } from "./docs/swagger";
-import { booksRouter } from "./routes/books.routes";
-import { reviewsRouter } from "./routes/reviews.routes";
-import { notFoundMiddleware } from "./middleware/not-found.middleware";
-import { errorMiddleware } from "./middleware/error.middleware";
+import { swaggerSpec } from "./docs/swagger.js";
+import { booksRouter } from "./routes/books.routes.js";
+import { reviewsRouter } from "./routes/reviews.routes.js";
+import { notFoundMiddleware } from "./middleware/not-found.middleware.js";
+import { errorMiddleware } from "./middleware/error.middleware.js";
 
 export const app: Express = express();
 
