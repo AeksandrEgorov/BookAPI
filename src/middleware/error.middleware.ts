@@ -8,6 +8,23 @@ type ErrorDetail = {
   message: string;
 };
 
+type DriverAdapterCause = {
+  originalCode?: string;
+  originalMessage?: string;
+  kind?: string;
+  constraint?: unknown;
+};
+
+type DriverAdapterErrorMeta = {
+  cause?: DriverAdapterCause;
+};
+
+type PrismaErrorMeta = {
+  target?: unknown;
+  modelName?: string;
+  driverAdapterError?: DriverAdapterErrorMeta;
+};
+
 export function errorMiddleware(
   error: unknown,
   _req: Request,
@@ -15,16 +32,26 @@ export function errorMiddleware(
   _next: NextFunction
 ): void {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    const meta = error.meta as PrismaErrorMeta | undefined;
+
+
     if (error.code === "P2002") {
-      const target = error.meta?.target;
       let field = "unknown";
+      let message = "Unique constraint failed";
+
+      const target = meta?.target;
+      const originalMessage = meta?.driverAdapterError?.cause?.originalMessage;
 
       if (Array.isArray(target) && target.length > 0) {
-        const firstTarget = target[0];
+        field = String(target[0]);
+      } else if (typeof target === "string") {
+        field = target;
+      }
 
-        if (typeof firstTarget === "string") {
-          field = firstTarget;
-        }
+      if (typeof originalMessage === "string" && originalMessage.trim() !== "") {
+        message = originalMessage;
+      } else if (field === "isbn") {
+        message = "Book with this ISBN already exists";
       }
 
       res.status(400).json({
@@ -32,10 +59,7 @@ export function errorMiddleware(
         details: [
           {
             field,
-            message:
-              field === "isbn"
-                ? "Book with this ISBN already exists"
-                : "Unique constraint failed",
+            message,
           },
         ] satisfies ErrorDetail[],
       });
@@ -43,12 +67,23 @@ export function errorMiddleware(
     }
 
     if (error.code === "P2003") {
+      let field = "relation";
+      let message = "Invalid related entity id";
+
+      const target = meta?.target;
+
+      if (Array.isArray(target) && target.length > 0) {
+        field = String(target[0]);
+      } else if (typeof target === "string") {
+        field = target;
+      }
+
       res.status(400).json({
         error: "Validation failed",
         details: [
           {
-            field: "relation",
-            message: "Invalid related entity id",
+            field,
+            message,
           },
         ] satisfies ErrorDetail[],
       });
@@ -67,6 +102,30 @@ export function errorMiddleware(
       });
       return;
     }
+
+    res.status(400).json({
+      error: "Database request failed",
+      details: [
+        {
+          field: "database",
+          message: error.message,
+        },
+      ] satisfies ErrorDetail[],
+    });
+    return;
+  }
+
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    res.status(400).json({
+      error: "Validation failed",
+      details: [
+        {
+          field: "request",
+          message: error.message,
+        },
+      ] satisfies ErrorDetail[],
+    });
+    return;
   }
 
   if (error instanceof Error) {
