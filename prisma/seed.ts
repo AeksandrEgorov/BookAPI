@@ -89,7 +89,6 @@ async function main() {
 
   await prisma.review.createMany({
     data: reviews.map((r) => ({
-      id: r.id,
       bookId: r.bookId,
       userName: r.userName,
       rating: r.rating,
