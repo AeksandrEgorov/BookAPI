@@ -1,11 +1,15 @@
+import { Routes, Route } from 'react-router-dom'
+import BooksPage from './pages/BooksPage'
+import BooksDetailPage from './pages/BooksDetailPage'
 
 function App() {
   return (
-    <div className='p-8'>
-      <h1 className='text-3xl font-bold mb-4 text-blue-600'>Book API Frontend</h1>
-    </div>
+    <Routes>
+      <Route path= "/books" />
+      <Route path= "/books/:id" />
+    </Routes>
   );
 }
 
-
+ 
 export default App;
