@@ -27,7 +27,7 @@ The project supports two data sources:
 
 ## 📸 Screenshots
 
-![Swagger](./images/swagger.png)
+![Swagger](./backend/images/swagger.png)
 
 ---
 
