@@ -2,14 +2,46 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-import { getBooks, getLanguages } from "../api/books.api.js";
+import {
+  createBook,
+  getAuthors,
+  getBooks,
+  getGenres,
+  getLanguages,
+  getPublishers,
+} from "../api/books.api.js";
+import BookFormModal, {
+  type BookFormState,
+} from "../components/BookFormModal.js";
 
-import type { Book, BookQueryParams } from "../types/book.types.js";
+import type {
+  AuthorOption,
+  Book,
+  BookQueryParams,
+  CreateBookInput,
+  PublisherOption,
+} from "../types/book.types.js";
 import type { ApiErrorResponse } from "../types/common.types.js";
+
+const initialBookFormState: BookFormState = {
+  title: "",
+  isbn: "",
+  publishedYear: "",
+  pageCount: "",
+  language: "",
+  description: "",
+  coverImage: "",
+  authorId: "",
+  publisherId: "",
+  genres: [],
+};
 
 function BooksPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
+  const [authors, setAuthors] = useState<AuthorOption[]>([]);
+  const [publishers, setPublishers] = useState<PublisherOption[]>([]);
+  const [availableGenres, setAvailableGenres] = useState<string[]>([]);
 
   const [title, setTitle] = useState<string>("");
   const [year, setYear] = useState<string>("");
@@ -18,19 +50,23 @@ function BooksPage() {
   const [order, setOrder] = useState<"asc" | "desc">("asc");
 
   const [page, setPage] = useState<number>(1);
-  const limit = 9;
-
+  const [limit] = useState<number>(6);
   const [totalPages, setTotalPages] = useState<number>(1);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [languagesLoading, setLanguagesLoading] = useState<boolean>(false);
+  const [referenceLoading, setReferenceLoading] = useState<boolean>(false);
 
   const [error, setError] = useState<string>("");
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [createLoading, setCreateLoading] = useState<boolean>(false);
+  const [createError, setCreateError] = useState<string>("");
+  const [bookForm, setBookForm] = useState<BookFormState>(initialBookFormState);
 
   const queryParams: BookQueryParams = useMemo(() => {
     const params: BookQueryParams = {
       sortBy,
-      order, 
+      order,
       page,
       limit,
     };
@@ -88,22 +124,36 @@ function BooksPage() {
   useEffect(() => {
     const controller = new AbortController();
 
-    async function fetchLanguages(): Promise<void> {
+    async function fetchReferenceData(): Promise<void> {
       try {
-        setLanguagesLoading(true);
+        setReferenceLoading(true);
 
-        const response = await getLanguages(controller.signal);
-        setLanguages(response.data);
+        const [
+          languagesResponse,
+          authorsResponse,
+          publishersResponse,
+          genresResponse,
+        ] = await Promise.all([
+          getLanguages(controller.signal),
+          getAuthors(controller.signal),
+          getPublishers(controller.signal),
+          getGenres(controller.signal),
+        ]);
+
+        setLanguages(languagesResponse.data);
+        setAuthors(authorsResponse.data);
+        setPublishers(publishersResponse.data);
+        setAvailableGenres(genresResponse.data);
       } catch (err: unknown) {
         if (axios.isCancel(err)) {
           return;
         }
       } finally {
-        setLanguagesLoading(false);
+        setReferenceLoading(false);
       }
     }
 
-    void fetchLanguages();
+    void fetchReferenceData();
 
     return () => {
       controller.abort();
@@ -144,6 +194,100 @@ function BooksPage() {
     setPage(1);
   }
 
+  function handleOpenCreateModal(): void {
+    setBookForm(initialBookFormState);
+    setCreateError("");
+    setIsCreateModalOpen(true);
+  }
+
+  function handleCloseCreateModal(): void {
+    if (createLoading) {
+      return;
+    }
+
+    setIsCreateModalOpen(false);
+    setCreateError("");
+    setBookForm(initialBookFormState);
+  }
+
+  function handleBookFormChange(
+    field: keyof BookFormState,
+    value: string | string[]
+  ): void {
+    setBookForm((previousState: BookFormState) => ({
+      ...previousState,
+      [field]: value,
+    }));
+  }
+
+  async function refreshBooksAfterCreate(): Promise<void> {
+    const refreshedResponse = await getBooks({
+      sortBy,
+      order,
+      page: 1,
+      limit,
+      ...(title.trim() !== "" ? { title: title.trim() } : {}),
+      ...(year.trim() !== "" ? { year: Number(year) } : {}),
+      ...(language.trim() !== "" ? { language } : {}),
+    });
+
+    setBooks(refreshedResponse.data);
+    setTotalPages(refreshedResponse.pagination.totalPages);
+    setPage(1);
+  }
+
+  async function handleCreateBook(
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    event.preventDefault();
+
+    try {
+      setCreateLoading(true);
+      setCreateError("");
+
+      const data: CreateBookInput = {
+        title: bookForm.title.trim(),
+        isbn: bookForm.isbn.trim(),
+        publishedYear: Number(bookForm.publishedYear),
+        pageCount: Number(bookForm.pageCount),
+        language: bookForm.language.trim(),
+        description:
+          bookForm.description.trim() !== ""
+            ? bookForm.description.trim()
+            : undefined,
+        coverImage:
+          bookForm.coverImage.trim() !== ""
+            ? bookForm.coverImage.trim()
+            : undefined,
+        authorId: Number(bookForm.authorId),
+        publisherId: Number(bookForm.publisherId),
+        genres: bookForm.genres,
+      };
+
+      await createBook(data);
+      await refreshBooksAfterCreate();
+      handleCloseCreateModal();
+    } catch (err: unknown) {
+      if (axios.isAxiosError<ApiErrorResponse>(err)) {
+        const apiError: ApiErrorResponse | undefined = err.response?.data;
+
+        if (apiError?.details !== undefined && apiError.details.length > 0) {
+          setCreateError(
+            apiError.details.map((detail) => detail.message).join(", ")
+          );
+          return;
+        }
+
+        setCreateError(apiError?.error ?? "Failed to create book");
+        return;
+      }
+
+      setCreateError("Failed to create book");
+    } finally {
+      setCreateLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-8">
@@ -157,6 +301,7 @@ function BooksPage() {
 
           <button
             type="button"
+            onClick={handleOpenCreateModal}
             className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
           >
             Add book
@@ -273,8 +418,10 @@ function BooksPage() {
               Reset filters
             </button>
 
-            {languagesLoading ? (
-              <span className="text-sm text-slate-500">Loading languages...</span>
+            {referenceLoading ? (
+              <span className="text-sm text-slate-500">
+                Loading reference data...
+              </span>
             ) : null}
           </div>
         </div>
@@ -335,7 +482,8 @@ function BooksPage() {
 
                   <button
                     type="button"
-                    className="shadow-sm transition hover:bg-red-100 rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-400 opacity-70"
+                    disabled
+                    className="cursor-not-allowed rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-400 opacity-70 shadow-sm"
                   >
                     Delete
                   </button>
@@ -369,6 +517,20 @@ function BooksPage() {
           </button>
         </div>
       </div>
+
+      <BookFormModal
+        isOpen={isCreateModalOpen}
+        form={bookForm}
+        loading={createLoading}
+        error={createError}
+        languages={languages}
+        authors={authors}
+        publishers={publishers}
+        availableGenres={availableGenres}
+        onClose={handleCloseCreateModal}
+        onChange={handleBookFormChange}
+        onSubmit={handleCreateBook}
+      />
     </div>
   );
 }
