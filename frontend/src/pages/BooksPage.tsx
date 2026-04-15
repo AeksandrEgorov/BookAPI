@@ -4,6 +4,7 @@ import axios from "axios";
 
 import {
   createBook,
+  deleteBook,
   getAuthors,
   getBooks,
   getGenres,
@@ -13,6 +14,7 @@ import {
 import BookFormModal, {
   type BookFormState,
 } from "../components/BookFormModal.js";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal.js";
 
 import type {
   AuthorOption,
@@ -57,11 +59,23 @@ function BooksPage() {
   const [referenceLoading, setReferenceLoading] = useState<boolean>(false);
 
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [createLoading, setCreateLoading] = useState<boolean>(false);
   const [createError, setCreateError] = useState<string>("");
   const [bookForm, setBookForm] = useState<BookFormState>(initialBookFormState);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+  const [deleteError, setDeleteError] = useState<string>("");
+  const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
+
+  const authorNameMap: Map<number, string> = useMemo(() => {
+    return new Map(
+      authors.map((author: AuthorOption) => [author.id, author.fullName])
+    );
+  }, [authors]);
 
   const queryParams: BookQueryParams = useMemo(() => {
     const params: BookQueryParams = {
@@ -160,6 +174,20 @@ function BooksPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (successMessage === "") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [successMessage]);
+
   function handleResetFilters(): void {
     setTitle("");
     setYear("");
@@ -220,11 +248,13 @@ function BooksPage() {
     }));
   }
 
-  async function refreshBooksAfterCreate(): Promise<void> {
+  async function refreshBooks(customPage?: number): Promise<void> {
+    const nextPage: number = customPage ?? page;
+
     const refreshedResponse = await getBooks({
       sortBy,
       order,
-      page: 1,
+      page: nextPage,
       limit,
       ...(title.trim() !== "" ? { title: title.trim() } : {}),
       ...(year.trim() !== "" ? { year: Number(year) } : {}),
@@ -233,7 +263,7 @@ function BooksPage() {
 
     setBooks(refreshedResponse.data);
     setTotalPages(refreshedResponse.pagination.totalPages);
-    setPage(1);
+    setPage(nextPage);
   }
 
   async function handleCreateBook(
@@ -265,8 +295,10 @@ function BooksPage() {
       };
 
       await createBook(data);
-      await refreshBooksAfterCreate();
+      await refreshBooks(1);
+
       handleCloseCreateModal();
+      setSuccessMessage("Book was added successfully.");
     } catch (err: unknown) {
       if (axios.isAxiosError<ApiErrorResponse>(err)) {
         const apiError: ApiErrorResponse | undefined = err.response?.data;
@@ -285,6 +317,61 @@ function BooksPage() {
       setCreateError("Failed to create book");
     } finally {
       setCreateLoading(false);
+    }
+  }
+
+  function handleOpenDeleteModal(book: Book): void {
+    setBookToDelete(book);
+    setDeleteError("");
+    setIsDeleteModalOpen(true);
+  }
+
+  function handleCloseDeleteModal(): void {
+    if (deleteLoading) {
+      return;
+    }
+
+    setIsDeleteModalOpen(false);
+    setDeleteError("");
+    setBookToDelete(null);
+  }
+
+  async function handleDeleteBook(): Promise<void> {
+    if (bookToDelete === null) {
+      return;
+    }
+
+    try {
+      setDeleteLoading(true);
+      setDeleteError("");
+
+      await deleteBook(bookToDelete.id);
+
+      const targetPage: number =
+        books.length === 1 && page > 1 ? page - 1 : page;
+
+      await refreshBooks(targetPage);
+
+      setSuccessMessage("Book was deleted successfully.");
+      handleCloseDeleteModal();
+    } catch (err: unknown) {
+      if (axios.isAxiosError<ApiErrorResponse>(err)) {
+        const apiError: ApiErrorResponse | undefined = err.response?.data;
+
+        if (apiError?.details !== undefined && apiError.details.length > 0) {
+          setDeleteError(
+            apiError.details.map((detail) => detail.message).join(", ")
+          );
+          return;
+        }
+
+        setDeleteError(apiError?.error ?? "Failed to delete book");
+        return;
+      }
+
+      setDeleteError("Failed to delete book");
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -426,6 +513,12 @@ function BooksPage() {
           </div>
         </div>
 
+        {successMessage !== "" ? (
+          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {successMessage}
+          </div>
+        ) : null}
+
         {error !== "" ? (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
@@ -458,6 +551,10 @@ function BooksPage() {
 
                 <div className="space-y-2 text-sm text-slate-700">
                   <p>
+                    <span className="font-medium">Author:</span>{" "}
+                    {authorNameMap.get(book.authorId) ?? `Author #${book.authorId}`}
+                  </p>
+                  <p>
                     <span className="font-medium">Year:</span> {book.publishedYear}
                   </p>
                   <p>
@@ -482,8 +579,8 @@ function BooksPage() {
 
                   <button
                     type="button"
-                    disabled
-                    className="cursor-not-allowed rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-400 opacity-70 shadow-sm"
+                    onClick={() => handleOpenDeleteModal(book)}
+                    className="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50"
                   >
                     Delete
                   </button>
@@ -530,6 +627,15 @@ function BooksPage() {
         onClose={handleCloseCreateModal}
         onChange={handleBookFormChange}
         onSubmit={handleCreateBook}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        title={bookToDelete?.title ?? ""}
+        loading={deleteLoading}
+        error={deleteError}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleDeleteBook}
       />
     </div>
   );
