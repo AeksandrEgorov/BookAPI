@@ -1,5 +1,4 @@
 import type { MouseEvent } from "react";
-import type { CreateReviewInput } from "../types/review.types.js";
 
 type ReviewFormState = {
   userName: string;

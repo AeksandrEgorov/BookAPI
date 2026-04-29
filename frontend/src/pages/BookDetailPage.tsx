@@ -7,13 +7,19 @@ import {
   getAuthors,
   getAverageRating,
   getBookById,
+  getGenres,
+  getLanguages,
   getPublishers,
+  updateBook,
 } from "../api/books.api.js";
 import {
   createReview,
   getReviewsByBookId,
 } from "../api/reviews.api.js";
 
+import BookFormModal, {
+  type BookFormState,
+} from "../components/BookFormModal.js";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal.js";
 import ReviewFormModal, {
   type ReviewFormState,
@@ -23,6 +29,7 @@ import type {
   AuthorOption,
   Book,
   PublisherOption,
+  UpdateBookInput,
 } from "../types/book.types.js";
 import type {
   CreateReviewInput,
@@ -36,6 +43,34 @@ const initialReviewFormState: ReviewFormState = {
   comment: "",
 };
 
+const initialBookFormState: BookFormState = {
+  title: "",
+  isbn: "",
+  publishedYear: "",
+  pageCount: "",
+  language: "",
+  description: "",
+  coverImage: "",
+  authorId: "",
+  publisherId: "",
+  genres: [],
+};
+
+function mapBookToFormState(book: Book): BookFormState {
+  return {
+    title: book.title,
+    isbn: book.isbn,
+    publishedYear: String(book.publishedYear),
+    pageCount: String(book.pageCount),
+    language: book.language,
+    description: book.description ?? "",
+    coverImage: book.coverImage ?? "",
+    authorId: String(book.authorId),
+    publisherId: String(book.publisherId),
+    genres: book.genres,
+  };
+}
+
 function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -48,10 +83,18 @@ function BookDetailPage() {
 
   const [authors, setAuthors] = useState<AuthorOption[]>([]);
   const [publishers, setPublishers] = useState<PublisherOption[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
+  const [availableGenres, setAvailableGenres] = useState<string[]>([]);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [editForm, setEditForm] =
+    useState<BookFormState>(initialBookFormState);
+  const [editLoading, setEditLoading] = useState<boolean>(false);
+  const [editError, setEditError] = useState<string>("");
 
   const [isReviewModalOpen, setIsReviewModalOpen] =
     useState<boolean>(false);
@@ -100,12 +143,16 @@ function BookDetailPage() {
           reviewsResponse,
           authorsResponse,
           publishersResponse,
+          languagesResponse,
+          genresResponse,
         ] = await Promise.all([
           getBookById(bookId, controller.signal),
           getAverageRating(bookId, controller.signal),
           getReviewsByBookId(bookId, controller.signal),
           getAuthors(controller.signal),
           getPublishers(controller.signal),
+          getLanguages(controller.signal),
+          getGenres(controller.signal),
         ]);
 
         setBook(bookResponse.data);
@@ -113,6 +160,8 @@ function BookDetailPage() {
         setReviews(reviewsResponse.data);
         setAuthors(authorsResponse.data);
         setPublishers(publishersResponse.data);
+        setLanguages(languagesResponse.data);
+        setAvailableGenres(genresResponse.data);
       } catch (err: unknown) {
         if (axios.isCancel(err)) {
           return;
@@ -149,6 +198,109 @@ function BookDetailPage() {
       window.clearTimeout(timeoutId);
     };
   }, [successMessage]);
+
+  function handleOpenEditModal(): void {
+    if (book === null) {
+      return;
+    }
+
+    setEditForm(mapBookToFormState(book));
+    setEditError("");
+    setIsEditModalOpen(true);
+  }
+
+  function handleCloseEditModal(): void {
+    if (editLoading) {
+      return;
+    }
+
+    setIsEditModalOpen(false);
+    setEditError("");
+    setEditForm(initialBookFormState);
+  }
+
+  function handleEditFormChange(
+    field: keyof BookFormState,
+    value: string | string[]
+  ): void {
+    setEditForm((previousState: BookFormState) => {
+      if (field === "genres") {
+        return {
+          ...previousState,
+          genres: Array.isArray(value) ? value : previousState.genres,
+        };
+      }
+
+      if (typeof value !== "string") {
+        return previousState;
+      }
+
+      return {
+        ...previousState,
+        [field]: value,
+      } as BookFormState;
+    });
+  }
+
+  async function handleUpdateBook(
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    event.preventDefault();
+
+    if (book === null) {
+      return;
+    }
+
+    try {
+      setEditLoading(true);
+      setEditError("");
+
+      const data: UpdateBookInput = {
+        title: editForm.title.trim(),
+        isbn: editForm.isbn.trim(),
+        publishedYear: Number(editForm.publishedYear),
+        pageCount: Number(editForm.pageCount),
+        language: editForm.language.trim(),
+        description:
+          editForm.description.trim() !== ""
+            ? editForm.description.trim()
+            : undefined,
+        coverImage:
+          editForm.coverImage.trim() !== ""
+            ? editForm.coverImage.trim()
+            : undefined,
+        authorId: Number(editForm.authorId),
+        publisherId: Number(editForm.publisherId),
+        genres: editForm.genres,
+      };
+
+      const updatedResponse = await updateBook(book.id, data);
+
+      setBook(updatedResponse.data);
+      setSuccessMessage("Book was updated successfully.");
+      setIsEditModalOpen(false);
+      setEditForm(initialBookFormState);
+      setEditError("");
+    } catch (err: unknown) {
+      if (axios.isAxiosError<ApiErrorResponse>(err)) {
+        const apiError: ApiErrorResponse | undefined = err.response?.data;
+
+        if (apiError?.details !== undefined && apiError.details.length > 0) {
+          setEditError(
+            apiError.details.map((detail) => detail.message).join(", ")
+          );
+          return;
+        }
+
+        setEditError(apiError?.error ?? "Failed to update book");
+        return;
+      }
+
+      setEditError("Failed to update book");
+    } finally {
+      setEditLoading(false);
+    }
+  }
 
   function handleOpenReviewModal(): void {
     setReviewForm(initialReviewFormState);
@@ -214,7 +366,9 @@ function BookDetailPage() {
       await createReview(bookId, data);
       await refreshReviewsAndRating();
 
-      handleCloseReviewModal();
+      setIsReviewModalOpen(false);
+      setReviewForm(initialReviewFormState);
+      setReviewError("");
       setSuccessMessage("Review was added successfully.");
     } catch (err: unknown) {
       if (axios.isAxiosError<ApiErrorResponse>(err)) {
@@ -344,8 +498,8 @@ function BookDetailPage() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              className="cursor-not-allowed rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-400 opacity-70"
-              disabled
+              onClick={handleOpenEditModal}
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
             >
               Edit
             </button>
@@ -492,6 +646,24 @@ function BookDetailPage() {
           )}
         </section>
       </div>
+
+      <BookFormModal
+        isOpen={isEditModalOpen}
+        form={editForm}
+        loading={editLoading}
+        error={editError}
+        languages={languages}
+        authors={authors}
+        publishers={publishers}
+        availableGenres={availableGenres}
+        title="Edit book"
+        description="Update book information."
+        submitText="Update book"
+        loadingText="Updating..."
+        onClose={handleCloseEditModal}
+        onChange={handleEditFormChange}
+        onSubmit={handleUpdateBook}
+      />
 
       <ReviewFormModal
         isOpen={isReviewModalOpen}
