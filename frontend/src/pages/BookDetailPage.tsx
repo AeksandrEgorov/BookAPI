@@ -3,20 +3,38 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 import {
+  deleteBook,
   getAuthors,
   getAverageRating,
   getBookById,
   getPublishers,
 } from "../api/books.api.js";
-import { getReviewsByBookId } from "../api/reviews.api.js";
+import {
+  createReview,
+  getReviewsByBookId,
+} from "../api/reviews.api.js";
+
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal.js";
+import ReviewFormModal, {
+  type ReviewFormState,
+} from "../components/ReviewFormModal.js";
 
 import type {
   AuthorOption,
   Book,
   PublisherOption,
 } from "../types/book.types.js";
-import type { Review } from "../types/review.types.js";
+import type {
+  CreateReviewInput,
+  Review,
+} from "../types/review.types.js";
 import type { ApiErrorResponse } from "../types/common.types.js";
+
+const initialReviewFormState: ReviewFormState = {
+  userName: "",
+  rating: "",
+  comment: "",
+};
 
 function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +51,20 @@ function BookDetailPage() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
+
+  const [isReviewModalOpen, setIsReviewModalOpen] =
+    useState<boolean>(false);
+  const [reviewForm, setReviewForm] = useState<ReviewFormState>(
+    initialReviewFormState
+  );
+  const [reviewLoading, setReviewLoading] = useState<boolean>(false);
+  const [reviewError, setReviewError] = useState<string>("");
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] =
+    useState<boolean>(false);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+  const [deleteError, setDeleteError] = useState<string>("");
 
   const authorNameMap: Map<number, string> = useMemo(() => {
     return new Map(
@@ -104,6 +136,154 @@ function BookDetailPage() {
     };
   }, [bookId]);
 
+  useEffect(() => {
+    if (successMessage === "") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [successMessage]);
+
+  function handleOpenReviewModal(): void {
+    setReviewForm(initialReviewFormState);
+    setReviewError("");
+    setIsReviewModalOpen(true);
+  }
+
+  function handleCloseReviewModal(): void {
+    if (reviewLoading) {
+      return;
+    }
+
+    setIsReviewModalOpen(false);
+    setReviewError("");
+    setReviewForm(initialReviewFormState);
+  }
+
+  function handleReviewFormChange(
+    field: keyof ReviewFormState,
+    value: string
+  ): void {
+    setReviewForm((previousState: ReviewFormState) => ({
+      ...previousState,
+      [field]: value,
+    }));
+  }
+
+  async function refreshReviewsAndRating(): Promise<void> {
+    const [reviewsResponse, ratingResponse] = await Promise.all([
+      getReviewsByBookId(bookId),
+      getAverageRating(bookId),
+    ]);
+
+    setReviews(reviewsResponse.data);
+    setAverageRating(ratingResponse.data.averageRating);
+  }
+
+  async function handleCreateReview(
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    event.preventDefault();
+
+    try {
+      setReviewLoading(true);
+      setReviewError("");
+
+      const ratingNumber: number = Number(reviewForm.rating);
+
+      if (![1, 2, 3, 4, 5].includes(ratingNumber)) {
+        setReviewError("Rating must be between 1 and 5");
+        return;
+      }
+
+      const data: CreateReviewInput = {
+        userName: reviewForm.userName.trim(),
+        rating: ratingNumber as CreateReviewInput["rating"],
+        comment:
+          reviewForm.comment.trim() !== ""
+            ? reviewForm.comment.trim()
+            : undefined,
+      };
+
+      await createReview(bookId, data);
+      await refreshReviewsAndRating();
+
+      handleCloseReviewModal();
+      setSuccessMessage("Review was added successfully.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError<ApiErrorResponse>(err)) {
+        const apiError: ApiErrorResponse | undefined = err.response?.data;
+
+        if (apiError?.details !== undefined && apiError.details.length > 0) {
+          setReviewError(
+            apiError.details.map((detail) => detail.message).join(", ")
+          );
+          return;
+        }
+
+        setReviewError(apiError?.error ?? "Failed to create review");
+        return;
+      }
+
+      setReviewError("Failed to create review");
+    } finally {
+      setReviewLoading(false);
+    }
+  }
+
+  function handleOpenDeleteModal(): void {
+    setDeleteError("");
+    setIsDeleteModalOpen(true);
+  }
+
+  function handleCloseDeleteModal(): void {
+    if (deleteLoading) {
+      return;
+    }
+
+    setIsDeleteModalOpen(false);
+    setDeleteError("");
+  }
+
+  async function handleDeleteBook(): Promise<void> {
+    if (book === null) {
+      return;
+    }
+
+    try {
+      setDeleteLoading(true);
+      setDeleteError("");
+
+      await deleteBook(book.id);
+
+      navigate("/books");
+    } catch (err: unknown) {
+      if (axios.isAxiosError<ApiErrorResponse>(err)) {
+        const apiError: ApiErrorResponse | undefined = err.response?.data;
+
+        if (apiError?.details !== undefined && apiError.details.length > 0) {
+          setDeleteError(
+            apiError.details.map((detail) => detail.message).join(", ")
+          );
+          return;
+        }
+
+        setDeleteError(apiError?.error ?? "Failed to delete book");
+        return;
+      }
+
+      setDeleteError("Failed to delete book");
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 px-4 py-8">
@@ -164,13 +344,15 @@ function BookDetailPage() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              className="cursor-not-allowed rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-400 opacity-70"
+              disabled
             >
               Edit
             </button>
 
             <button
               type="button"
+              onClick={handleOpenDeleteModal}
               className="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50"
             >
               Delete
@@ -178,11 +360,27 @@ function BookDetailPage() {
           </div>
         </div>
 
+        {successMessage !== "" ? (
+          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {successMessage}
+          </div>
+        ) : null}
+
         <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-slate-900">{book.title}</h1>
             <p className="mt-2 text-sm text-slate-500">ISBN: {book.isbn}</p>
           </div>
+
+          {book.coverImage !== undefined && book.coverImage !== "" ? (
+            <div className="mb-6 overflow-hidden rounded-2xl border border-slate-200">
+              <img
+                src={book.coverImage}
+                alt={book.title}
+                className="h-72 w-full object-cover"
+              />
+            </div>
+          ) : null}
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-xl bg-slate-50 p-4">
@@ -217,7 +415,7 @@ function BookDetailPage() {
             <div className="rounded-xl bg-slate-50 p-4">
               <p className="text-sm text-slate-500">Average rating</p>
               <p className="mt-1 font-medium text-slate-900">
-                {averageRating === null ? "No rating yet" : averageRating}
+                {averageRating === null ? "No rating yet" : `${averageRating}/5`}
               </p>
             </div>
           </div>
@@ -257,6 +455,7 @@ function BookDetailPage() {
 
             <button
               type="button"
+              onClick={handleOpenReviewModal}
               className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
             >
               Add review
@@ -278,6 +477,7 @@ function BookDetailPage() {
                     <p className="font-medium text-slate-900">
                       {review.userName}
                     </p>
+
                     <p className="text-sm text-slate-500">
                       Rating: {review.rating}/5
                     </p>
@@ -292,6 +492,25 @@ function BookDetailPage() {
           )}
         </section>
       </div>
+
+      <ReviewFormModal
+        isOpen={isReviewModalOpen}
+        form={reviewForm}
+        loading={reviewLoading}
+        error={reviewError}
+        onClose={handleCloseReviewModal}
+        onChange={handleReviewFormChange}
+        onSubmit={handleCreateReview}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        title={book.title}
+        loading={deleteLoading}
+        error={deleteError}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleDeleteBook}
+      />
     </div>
   );
 }
