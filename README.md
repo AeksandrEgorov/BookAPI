@@ -52,12 +52,13 @@ Deploy töötab mock andmetega (Renderis on ka võimalus kasutada prisma, seal o
 [https://restapi-graphql.onrender.com/api-docs](https://restapi-graphql.onrender.com/api-docs)
 
 ---
+Backend
 
 ## 📸 Screenshots
 
 ![Swagger](./backend/images/swagger.png)
-
-Add frontend screenshots here:
+---
+Frontend
 
 ![Books Page](./frontend/images/bookspage.png)
 ![Book Details Page](./frontend/images/bookdetail.png)
