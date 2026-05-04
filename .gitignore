@@ -2,9 +2,9 @@
 dist/
 build/
 .env
-src/generated
-src/generated/prisma
+backend/src/generated
+backend/src/generated/prisma
 prisma.config.js
 prisma.config.js.map
-prisma/seed.js
-prisma/seed.js.map
+backend/prisma/seed.js
+backend/prisma/seed.js.map
