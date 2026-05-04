@@ -1,27 +1,55 @@
-## 📚 Book API
+# 📚 Book API
 
 ---
 
 ## 📖 Description
 
-Book API is a TypeScript REST API for managing books, authors, publishers, and reviews.
+Book API is a full-stack TypeScript project for managing books, authors, publishers, and reviews.
 
-The project supports two data sources:
+The project consists of:
 
-* Mock (faker) — for testing without a database
-* Prisma (PostgreSQL) — for working with a real database
+* **Backend** — REST API built with Node.js, Express, Prisma, PostgreSQL, Zod, and Swagger
+* **Frontend** — React application built with Vite, TypeScript, Tailwind CSS, Axios, and React Router
+
+The backend supports two data sources:
+
+* **Mock (faker)** — for testing without a database
+* **Prisma (PostgreSQL)** — for working with a real database
 
 ### Features
 
 * CRUD operations for books
-* Filtering (title, language, year, author, genre)
+* Filtering by title, language, year, author, and genre
 * Pagination and sorting
+* Book details page
 * Reviews for books
 * Average rating calculation
+* Add book form in modal window
+* Edit book form in modal window
+* Add review form in modal window
+* Delete confirmation modal
 * Validation using Zod
 * Unified error handling
 * Swagger API documentation
-* Easy switching between data sources
+* Easy switching between mock and database data sources
+
+---
+
+## 🔗 Project Links
+
+Deploy töötab mock andmetega (Renderis on ka võimalus kasutada prisma, seal on postgre andmebaas tennus)
+
+### Frontend deploy
+
+[https://book-api-virid.vercel.app/books](https://book-api-virid.vercel.app/books)
+
+### Backend deploy
+
+[https://restapi-graphql.onrender.com/](https://restapi-graphql.onrender.com/)
+
+### Swagger documentation
+
+[https://restapi-graphql.onrender.com/api-docs](https://restapi-graphql.onrender.com/api-docs)
 
 ---
 
@@ -29,129 +57,285 @@ The project supports two data sources:
 
 ![Swagger](./backend/images/swagger.png)
 
+Add frontend screenshots here:
+
+![Books Page](./frontend/images/bookspage.png)
+![Book Details Page](./frontend/images/bookdetail.png)
+![Add book modal](./frontend/images/addbook.png)
+![Add review modal](./frontend/images/bookrating.png)
+
 ---
 
 ## 🧰 Technologies Used
+
+### Backend
 
 * TypeScript
 * Node.js / Express
 * Prisma ORM
 * PostgreSQL
 * Zod
-* Swagger (OpenAPI)
+* Swagger / OpenAPI
 * Faker
+* CORS
+
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS v4
+* Axios
+* React Router
+* AbortController
 
 ---
 
-## ⚙️ Setup & Configuration
+## 🗂 Project Structure
+
+```
+BookAPI/
+├─ backend/
+│  ├─ prisma/
+│  │  ├─ migrations/
+│  │  ├─ schema.prisma
+│  │  └─ seed.ts
+│  │
+│  ├─ src/
+│  │  ├─ config/
+│  │  ├─ controllers/
+│  │  ├─ data/
+│  │  ├─ docs/
+│  │  ├─ generated/
+│  │  ├─ interfaces/
+│  │  ├─ middleware/
+│  │  ├─ models/
+│  │  ├─ repositories/
+│  │  ├─ routes/
+│  │  ├─ services/
+│  │  ├─ validators/
+│  │  ├─ app.ts
+│  │  └─ index.ts
+│  │
+│  ├─ images/
+│  ├─ .env
+│  ├─ .env.example
+│  ├─ package.json
+│  ├─ prisma.config.ts
+│  └─ tsconfig.json
+│
+├─ frontend/
+│  ├─ src/
+│  │  ├─ api/
+│  │  ├─ components/
+│  │  ├─ pages/
+│  │  ├─ types/
+│  │  ├─ App.tsx
+│  │  ├─ main.tsx
+│  │  └─ index.css
+│  │
+│  ├─ .env
+│  ├─ .env.example
+│  ├─ index.html
+│  ├─ package.json
+│  ├─ tsconfig.json
+│  └─ vite.config.ts
+│
+├─ README.md
+└─ .gitignore
+```
+
+---
+
+## 🚀 Running the Project Locally
+
+Install dependencies separately in both folders:
+
+* `backend`
+* `frontend`
+
+---
+
+# Backend
+
+## ⚙️ Backend Setup & Configuration
 
 ### 1. Install dependencies
+
 ```
+cd backend
 npm install
 ```
+
 ---
 
-### 2. Configure .env
+### 2. Configure `.env`
 
-Create a `.env` file:
+Create a `.env` file inside the `backend` folder:
 
+```
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=bookapi"
+DATA_SOURCE=prisma
+```
 
 Important:
 
-* Schema must match `schema.prisma`. !! schemas  = ["bookapi"] and @@schema("bookapi") must be changed according to your database schema.
-* Schema name used in this project: **bookapi**
-* Create schema in the database before migrations
+* Schema in `DATABASE_URL` must match `schema.prisma`
+* In this project, the schema name is: **bookapi**
+* If you change schema name, also change:
+  * `schemas = ["bookapi"]`
+  * `@@schema("bookapi")`
 
-Example:
+Create schema in the database before migrations:
 
+```
 CREATE SCHEMA bookapi;
+```
 
 ---
 
 ### 3. Prisma setup
 
 Generate Prisma Client:
+
 ```
 npx prisma generate
 ```
+
 Run migrations:
+
 ```
 npx prisma migrate dev --name init
 ```
+
 Seed the database:
+
 ```
 npm run seed
 ```
+
 ---
 
-## 🚀 Running the Project
+## ▶️ Run Backend
 
-Before running the project, you need to compile it. Otherwise use developer mode commands.
+### Run with mock data
 
-### Compile project
-```
-npm run build or tsc or npx tsc
-```
-### Run with Mock data
-```
-npm run start:mock
-```
-or developer mode
 ```
 npm run dev:mock
 ```
----
 
-### Run with Prisma (PostgreSQL)
+or compiled mode:
+
 ```
-npm run start:prisma
+npm run start:mock
 ```
-or developer mode
+
+### Run with Prisma and PostgreSQL
+
 ```
 npm run dev:prisma
 ```
+
+or compiled mode:
+
+```
+npm run start:prisma
+```
+
+After starting the backend locally:
+
+* Server: [http://localhost:3000](http://localhost:3000)
+* Swagger: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
 ---
 
-After starting the server you will see:
+# Frontend
 
-Server is running on [http://localhost:3000](http://localhost:3000)
-Swagger docs: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+## ⚙️ Frontend Setup & Configuration
+
+### 1. Install dependencies
+
+```
+cd frontend
+npm install
+```
+
+---
+
+### 2. Configure `.env`
+
+Create a `.env` file inside the `frontend` folder.
+
+For local backend:
+
+```
+VITE_API_URL=http://localhost:3000/api/v1
+```
+
+For deployed backend:
+
+```
+VITE_API_URL=https://restapi-graphql.onrender.com/api/v1
+```
+
+---
+
+## ▶️ Run Frontend
+
+Development mode:
+
+```
+npm run dev
+```
+
+or compiled mode:
+
+```
+npm run preview
+```
+
+After starting the frontend locally:
+
+[http://localhost:5173/books](http://localhost:5173/books)
 
 ---
 
 ## 🧪 Testing the API
 
-You can test the API in several ways:
+You can test the backend API in several ways.
 
-### 1. Swagger (recommended)
+### 1. Swagger
 
-Open in browser:
+Local Swagger:
 
 [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
----
+Deployed Swagger:
 
-### 2. Thunder Client (VS Code)
-
-* Install Thunder Client extension
-* Send requests (GET, POST, PUT, DELETE) to:
-  [http://localhost:3000](http://localhost:3000)
+[https://restapi-graphql.onrender.com/api-docs](https://restapi-graphql.onrender.com/api-docs)
 
 ---
 
-### 3. Local testing
+### 2. Thunder Client or Postman
 
-You can also test endpoints directly in browser (GET requests)
+Send requests to local backend:
+
+[http://localhost:3000](http://localhost:3000)
+
+or deployed backend:
+
+[https://restapi-graphql.onrender.com](https://restapi-graphql.onrender.com)
 
 ---
 
 ## 🔁 Data Source Switching
 
-Switching is handled automatically:
+Backend data source is controlled by npm scripts.
 
-* `npm run start:mock` → uses mock data
-* `npm run start:prisma` → uses PostgreSQL
+* `npm run dev:mock` → uses mock data
+* `npm run dev:prisma` → uses PostgreSQL through Prisma
+* `npm run start:mock` → uses mock data in compiled mode
+* `npm run start:prisma` → uses PostgreSQL in compiled mode
 
 ---
 
@@ -159,7 +343,6 @@ Switching is handled automatically:
 
 * CRUD operations for books
 * Filtering:
-
   * title
   * language
   * year
@@ -172,65 +355,67 @@ Switching is handled automatically:
 
 ---
 
+## 🖥 Frontend Features
+
+### `/books`
+
+* Books list as cards
+* Filtering by:
+  * title
+  * year
+  * language
+* Sorting by:
+  * title
+  * year
+* Pagination
+* Add book modal
+* View book button
+* Delete confirmation modal
+* Success and error messages
+
+### `/books/:id`
+
+* Full book details
+* Average rating
+* Reviews list
+* Add review modal
+* Edit book modal
+* Delete confirmation modal
+* Back button
+
+---
+
 ## ❗ Error Handling
 
-Example:
+Example error response:
+
 ```
 {
-"error": "Validation failed",
+  "error": "Validation failed",
   "details": [
     {
-    "field": "isbn",
-    "message": "Book with this ISBN already exists"
+      "field": "isbn",
+      "message": "Book with this ISBN already exists"
     }
   ]
 }
 ```
+
 Handled errors:
 
 * Zod validation errors
-* Prisma errors (P2002, P2003, P2025)
+* Prisma errors:
+  * P2002
+  * P2003
+  * P2025
 * Internal server errors
 
 ---
 
-## 🗂 Project Structure
-```
-BookAPI/
-├─ prisma/
-│  ├─ migrations/
-│  ├─ schema.prisma
-│  └─ seed.ts
-├─ src/
-│  ├─ config/
-│  │  ├─ prisma.ts
-│  │  └─ repositories.ts
-│  ├─ data/
-│  ├─ docs/
-│  │  └─ swagger.ts
-│  ├─ generated/
-│  │  └─ prisma/
-│  ├─ interfaces/
-│  ├─ middleware/
-│  ├─ models/
-│  ├─ repositories/
-│  ├─ routes/
-│  ├─ services/
-│  ├─ validators/
-│  │
-│  ├─ app.ts
-│  └─ index.ts
-│
-├─ .env
-├─ .env.example
-├─ package.json
-├─ prisma.config.ts
-└─ tsconfig.json
-```
----
-
 ## 📌 Notes
 
-* Prisma uses custom schema: **bookapi**
-* Mock mode allows running API without database
+* Backend uses a custom Prisma schema: **bookapi**
+* Mock mode allows running API without a database
+* Frontend uses `VITE_API_URL` to connect to backend
+* Frontend forms are implemented with modal windows
 * Architecture supports easy switching between data sources
