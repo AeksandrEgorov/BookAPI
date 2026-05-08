@@ -39,6 +39,8 @@ The backend supports two data sources:
 
 Deploy töötab mock andmetega (Renderis on ka võimalus kasutada prisma, seal on postgre andmebaas tennus)
 
+Render võtab laadimiseks aega, kuna see on tasuta plaan ja teenus läheb magama, kui seda kaua ei kasutata.
+
 ### Frontend deploy
 
 [https://book-api-virid.vercel.app/books](https://book-api-virid.vercel.app/books)
